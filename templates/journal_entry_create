@@ -1,0 +1,4 @@
+{{ template "generic_match" .JournalMatch }}
+WITH match_origin, count(match_relationship) AS last_entry
+CREATE(match_origin)-[:{{ .RelationshipLabel }} {order:last_entry + 1}]->({{ .JournalEntryVar }}{{ .JournalEntry }}"})
+RETURN {{ .JournalEntryVar }} 

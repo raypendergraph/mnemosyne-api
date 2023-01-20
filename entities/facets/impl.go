@@ -15,8 +15,9 @@ func (r GloballyIdentifiableImpl) GetUUID() sys.UUID {
 
 type ListDisplayableImpl struct {
 	GloballyIdentifiableImpl
-	Title   string `json:"title"`
-	Caption string `json:"caption"`
+	Title      string `json:"title"`
+	Caption    string `json:"caption"`
+	EntityKind string `json:"entity_kind"`
 }
 
 func (r ListDisplayableImpl) GetTitle() string {
@@ -25,6 +26,10 @@ func (r ListDisplayableImpl) GetTitle() string {
 
 func (r ListDisplayableImpl) GetCaption() string {
 	return r.Caption
+}
+
+func (r ListDisplayableImpl) GetEntityKind() string {
+	return r.EntityKind
 }
 
 type TimeTrackableImpl struct {

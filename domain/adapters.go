@@ -21,7 +21,7 @@ type ConceptRepositoryAdapter interface {
 }
 
 type JournalRepositoryAdapter interface {
-	CreateJournal(ctx sys.ServiceContext, title, caption string) sys.Result[journal.Type]
+	CreateJournal(ctx sys.ServiceContext, entity journal.Type) sys.Result[journal.Type]
 	FetchJournalWithAssociations(ctx sys.ServiceContext, journalID sys.UUID) sys.Result[journal.TypeWithAssociations]
 	ListJournalEntries(ctx sys.ServiceContext, journalID sys.UUID) sys.Result[e.PagedList[facets.ListDisplayable]]
 	TagJournal(ctx sys.ServiceContext, journalEntryID sys.UUID, tags []string) sys.Result[sys.Void]

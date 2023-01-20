@@ -1,0 +1,16 @@
+{{ if .}}
+	{{- if .Origin }}
+	MATCH (match_origin{{ .Origin }})
+	{{- end }}
+
+	{{- if .Relationship }}
+		{{- if .Origin }}-{{ end }}[match_relationship{{ .Relationship }}]
+	{{- end }}
+
+	{{- if .Destination }}
+		{{- if .Relationship }}
+			-{{- if .Relationship.IsDirected }}>{{ end }}
+		{{- end -}}
+	(match_destination{{ .Destination }})
+	{{- end }}
+{{- end }}

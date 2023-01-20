@@ -2,6 +2,7 @@ package services
 
 import (
 	"mnemosyne-api/domain"
+	"mnemosyne-api/entities/facets"
 	"mnemosyne-api/entities/fieldmask"
 	"mnemosyne-api/entities/journal"
 	"mnemosyne-api/entities/journal_entry"
@@ -16,11 +17,17 @@ type journalEditor struct {
 func (r journalEditor) CreateJournal(ctx sys.ServiceContext, command domain.CreateJournalCommand) (out sys.Result[journal.Type]) {
 	t := time.Now().UTC()
 	entity := journal.Impl{
-		UUID:      sys.NewUUID(),
-		Title:     command.GetTitle(),
-		Caption:   command.GetCaption(),
-		CreatedAt: t,
-		UpdatedAt: t,
+		GloballyIdentifiable: &facets.GloballyIdentifiableImpl{
+			UUID: sys.NewUUID(),
+		},
+		ListDisplayable: &facets.ListDisplayableImpl{
+			Title:   command.GetTitle(),
+			Caption: command.GetCaption(),
+		},
+		TimeTrackable: &facets.TimeTrackableImpl{
+			CreatedAt: t,
+			UpdatedAt: t,
+		},
 	}
 
 	if messages := entity.Validate(); len(messages) > 0 {

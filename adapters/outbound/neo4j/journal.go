@@ -28,7 +28,7 @@ type JournalRepository struct {
 func (r JournalRepository) CreateJournal(ctx sys.ServiceContext, title, caption string) sys.Result[journal.Type] {
 	stmt, args := r.prepareCreateJournalRequest(title, caption)
 	mapFn := r.prepareCreateJournalMapFn(ctx)
-	return WriteWithTransaction[journal.Type](
+	return writeWithTransaction[journal.Type](
 		TransactionArguments[journal.Type]{
 			Context:    ctx,
 			Statement:  stmt,
@@ -37,22 +37,26 @@ func (r JournalRepository) CreateJournal(ctx sys.ServiceContext, title, caption 
 			MapResults: mapFn,
 		})
 }
-
-func (r JournalRepository) prepareCreateJournalMapFn(ctx sys.ServiceContext) func(r neo4j.ResultWithContext) (journal.Type, error) {
+func (r JournalRepository) prepareCreateJournalMapFn(ctx sys.ServiceContext) resultMapping[journal.Type] {
 	return func(r neo4j.ResultWithContext) (journal.Type, error) {
 		record, err := r.Single(ctx.GetPortContext())
 		if err != nil {
 			return nil, err
 		}
-		return recordToJournal(ctx, record)
+		column, found := record.Get(journalVariable)
+		if !found {
+			return nil, ctx.NewError(sys.ErrNeo4JUnmarshallingFailure)
+		}
+
+		n := column.(neo4j.Node)
+		return nodeToJournal(ctx, n)
 	}
 }
-
 func (r JournalRepository) prepareCreateJournalRequest(title, caption string) (string, parameters) {
 	now := time.Now().UTC()
 	journalNode := spec{
-		variable: journalVariable,
-		parameters: parameters{
+		Variable: journalVariable,
+		Parameters: parameters{
 			journal.FieldUUID.String():      sys.NewUUID().String(),
 			journal.FieldCreatedAt.String(): now,
 			journal.FieldUpdatedAt.String(): now,
@@ -60,10 +64,10 @@ func (r JournalRepository) prepareCreateJournalRequest(title, caption string) (s
 			journal.FieldTitle.String():     title,
 			journal.FieldCaption.String():   caption,
 		},
-		labels: []string{journalLabel},
+		Labels: []string{journalLabel},
 	}.Build()
 
-	return fmt.Sprintf("CREATE (%s) RETURN(%s)", journalNode, journalNode.variable), journalNode.parameters
+	return fmt.Sprintf("CREATE (%s) RETURN(%s)", journalNode, journalNode.Variable), journalNode.Parameters
 }
 
 func (r JournalRepository) FetchJournalWithAssociations(ctx sys.ServiceContext, journalID sys.UUID) sys.Result[journal.TypeWithAssociations] {

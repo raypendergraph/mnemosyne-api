@@ -1,0 +1,17 @@
+{{- if .Match -}}
+    {{ template "generic_match" .Match}}
+{{- end }}
+CREATE (created{{ .Created }})
+
+{{- /* It's assumed that if there is a match then we want to attach
+       so is also assumed*/ -}}
+{{- if .Match }}
+CREATE (matched_origin)
+    {{- if .MatchedIsOrigin }}<{{ end -}}
+    -[created_relationship{{ .Relationship }}]-
+    {{- if not .MatchIsOrigin }}>{{ end -}}
+    (created)
+{{- end }}
+{{- if .ReturnsResult -}}
+RETURN {{ if .ReturnsRelationship }}rel,{{ end }}created
+{{- end }}
